@@ -1,1 +1,2 @@
-Mancala on Terminal
+Mancala on Terminal with random generation
+
