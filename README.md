@@ -27,4 +27,4 @@ Most mancala games share a common general gameplay. Players begin by placing a c
 For more information about the game:
   1. [Wikipedia - Mancala](https://en.wikipedia.org/wiki/Mancala)
   2. [WIkipedia - Alemungula](https://en.wikipedia.org/wiki/Alemungula)
-  3. [How to Play Mancala](https://www.youtube.com/watch?v=OX7rj93m6o8)
+  3. [Youtube - How to Play Mancala](https://www.youtube.com/watch?v=OX7rj93m6o8)
