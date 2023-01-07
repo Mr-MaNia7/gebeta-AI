@@ -10,7 +10,7 @@ Generally, the mancala games are a family of two-player turn-based strategy boar
 
 # The Board
 
-In the board, player 1 owns the bottom row of stones and player 2 owns the top row. There are also two special pits on the board, called Mancalas, in which each player accumulates his or her captured stones (player 1's Mancala is on the right and player 2's Mancala is on the left).
+In the board, player 1 owns the bottom row of stones and player 2 owns the top row. There are also two special pits on the board, called Mancalas or Banks, in which each player accumulates his or her captured stones (player 1's Mancala is on the right and player 2's Mancala is on the left).
 
 # General Gameplay
 
@@ -18,11 +18,12 @@ Most mancala games share a common general gameplay. Players begin by placing a c
 
 # Contributors
 
-1. Abdulkarim Getachew - *UGR/7992/12*
-2. Tigist Wondimneh- *UGR/2532/12*
+1. Tigist Wondimneh - *UGR/2532/12*
+2. Abdulkarim Getachew - *UGR/7992/12*
 3. Rediet Ferew - *UGR/1415/12*
 
 # References
+
 For more information about the game:
   1. [Wikipedia - Mancala](https://en.wikipedia.org/wiki/Mancala)
   2. [WIkipedia - Alemungula](https://en.wikipedia.org/wiki/Alemungula)
