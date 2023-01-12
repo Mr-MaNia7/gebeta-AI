@@ -1,3 +1,4 @@
+import copy
 from Players import *
 
 class Board:
@@ -101,11 +102,13 @@ class Board:
         if repeat_turn:
             return True
 
+        # capturing the other side's stones
         if pits == init_pits and pits[pit - 2] == 1:
             self.bankPits[player.num - 1] += opp_pits[(self.PITS - pit) + 1]
             opp_pits[(self.PITS - pit) + 1] = 0
             pits[pit - 2] = 0
         return False
+    
 
     def make_move(self, player, pit):
         """Makes the actual move in the game - returns whether the game can continue or not."""
@@ -121,12 +124,50 @@ class Board:
         else:
             return repeat
 
+    def future_lookup(self, curr_player, wait_player, pit):
+        """Helper for looking up the game in the future, returns the newly created game state."""
+        new_board = copy.deepcopy(self)
+        if curr_player.num == 1:
+            pits = new_board.PLAYER1_PITS
+            opp_pits = new_board.PLAYER2_PITS
+        else:
+            pits = new_board.PLAYER2_PITS
+            opp_pits = new_board.PLAYER1_PITS
+        init_pits = pits
+        stones = pits[pit-1]
+        pits[pit-1] = 0
+        pit += 1
+        repeat_turn = False
+        while stones > 0:
+            repeat_turn = False
+            # seeding stones into pits
+            while pit <= len(pits) and stones > 0:
+                pits[pit-1] += 1
+                stones -= 1
+                pit += 1
+            if stones == 0:
+                break
+            if pits == init_pits: # ??
+                new_board.bankPits[curr_player.num - 1] += 1
+                stones -= 1
+                repeat_turn = True
+            pits, opp_pits = opp_pits, pits
+            pit = 1
+        if repeat_turn:
+            return new_board, curr_player
+
+        if pits == init_pits and pits[pit - 2] == 1:
+            new_board.bankPits[curr_player.num - 1] += opp_pits[(new_board.PITS - pit) + 1]
+            opp_pits[(new_board.PITS - pit) + 1] = 0
+            pits[pit - 2] = 0
+        return new_board, wait_player
+
     def get_score(self, player):
         """Return the running score of the player 'player'."""
-        return self.bankPits[player.num -1]
+        return self.bankPits[player.num - 1]
 
     def host_game(self, player1, player2):
-        """Hosts the game"""
+        """Hosts the game."""
         self.reset()
         curr_player = player1
         wait_player = player2
