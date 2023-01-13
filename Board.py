@@ -11,6 +11,16 @@ class Board:
         self.PLAYER1_PITS = [4] * self.PITS
         self.PLAYER2_PITS = [4] * self.PITS
         self.bankPits = [0, 0]
+    
+    def copy(self):
+        """Copies the object and returns the copy."""
+        new_board = Board()
+        new_board.reset()
+        new_board.PITS = self.PITS
+        new_board.PLAYER1_PITS = self.PLAYER1_PITS
+        new_board.PLAYER2_PITS = self.PLAYER2_PITS
+        new_board.bankPits = self.bankPits
+        return new_board
 
     def __repr__(self):
         """Custom repr() method to represent this object."""
@@ -58,7 +68,7 @@ class Board:
             return False
 
     def get_possible_moves(self, player):
-        """Return the list of possible moves in accordance with the rules of the game."""
+        """Return the list of legal moves in accordance with the rules of the game."""
         if player.num == 1:
             pits = self.PLAYER1_PITS
         else:
@@ -101,11 +111,16 @@ class Board:
         if repeat_turn:
             return True
 
+        # capturing the other side's stones
         if pits == init_pits and pits[pit - 2] == 1:
             self.bankPits[player.num - 1] += opp_pits[(self.PITS - pit) + 1]
             opp_pits[(self.PITS - pit) + 1] = 0
             pits[pit - 2] = 0
         return False
+
+    def get_score(self, player):
+        """Return the running score of the player 'player'."""
+        return self.bankPits[player.num - 1]
 
     def make_move(self, player, pit):
         """Makes the actual move in the game - returns whether the game can continue or not."""
@@ -121,12 +136,72 @@ class Board:
         else:
             return repeat
 
-    def get_score(self, player):
-        """Return the running score of the player 'player'."""
-        return self.bankPits[player.num -1]
+    def future_lookup(self, curr_player, pit):
+        """Helper for looking up the game in the future, returns the newly created game state."""
+        new_board = self.copy()
+        if curr_player.num == 1:
+            pits = new_board.PLAYER1_PITS
+            opp_pits = new_board.PLAYER2_PITS
+        else:
+            pits = new_board.PLAYER2_PITS
+            opp_pits = new_board.PLAYER1_PITS
+        init_pits = pits
+        stones = pits[pit-1]
+        pits[pit-1] = 0
+        pit += 1
+        repeat_turn = False
+        while stones > 0:
+            repeat_turn = False
+            # seeding stones into pits
+            while pit <= len(pits) and stones > 0:
+                pits[pit-1] += 1
+                stones -= 1
+                pit += 1
+            if stones == 0:
+                break
+            if pits == init_pits:
+                new_board.bankPits[curr_player.num - 1] += 1
+                stones -= 1
+                repeat_turn = True
+            pits, opp_pits = opp_pits, pits
+            pit = 1
+        if repeat_turn:
+            return new_board, True
+
+        if pits == init_pits and pits[pit - 2] == 1:
+            new_board.bankPits[curr_player.num - 1] += opp_pits[(new_board.PITS - pit) + 1]
+            opp_pits[(new_board.PITS - pit) + 1] = 0
+            pits[pit - 2] = 0
+        return new_board, False
+    
+    def miniMaxMove(self, player, depth, max_for_player, other_player):
+        """Maximizes the minimum score possible by playing a move, returns tuple of best move."""
+        # When we can't make any more moves, just calculate the "final score" of the board.
+        if depth == -1 or self.is_game_over():
+            return None, self.get_score(max_for_player)
+
+        # Get our list of possible moves and set a default we'll definitely beat.
+        moves = self.get_possible_moves(player)
+        # print(f"moves => {moves}")
+        maximise = max_for_player == player
+        worst_score = float('-inf') if maximise else float('inf')
+        best_move = moves[0], worst_score
+
+        for move in moves:
+            new_board, is_repeat = self.future_lookup(player, move)
+            if not is_repeat: 
+                player, other_player = other_player, player
+            # recursive call for depth times
+            _move, score = new_board.miniMaxMove(player, depth - 1, max_for_player, other_player)
+
+            set_new_max = maximise and score >= best_move[1]
+            set_new_min = (not maximise) and score <= best_move[1]
+            if _move is not None and set_new_max or set_new_min:
+                best_move = move, score
+        return best_move
 
     def host_game(self, player1, player2):
-        """Hosts the game"""
+        """Hosts the game."""
         self.reset()
         curr_player = player1
         wait_player = player2
@@ -135,11 +210,11 @@ class Board:
             again = True
             while again:
                 print(self)
-                move = curr_player.choose_move(self)
+                move = curr_player.choose_move(self, wait_player)
                 # validate the chosen move
                 while not (self.is_legal_move(curr_player, move)):
                     print(f"{move} is not legal")
-                    move = curr_player.choose_move(self)
+                    move = curr_player.choose_move(self, wait_player)
                 again = self.make_move(curr_player, move)
             curr_player, wait_player = wait_player, curr_player
         # End message
