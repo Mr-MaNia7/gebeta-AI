@@ -45,3 +45,26 @@ class Player:
             move = random.choice(board.get_legal_moves(self))
             print(f'{move} has been chosen')
             return move
+        
+    def miniMaxMove(self, board, depth, max_for_player):
+        """Maximizes the minimum score possible by playing a move, returns tuple of best move."""
+        if depth == 0 or board.is_game_over():
+            return None, board.get_score(max_for_player)
+
+        moves = board.get_possible_moves(self)
+        print(f"moves => {moves}")
+        maximise = max_for_player == self
+        worst_score = float('-inf') if maximise else float('inf')
+        best_move = moves[0], worst_score
+
+        for move in moves:
+            next_state = board.future_lookup(self, move)
+            new_board, player = next_state
+            # recursive call for depth times
+            _, score = self.miniMaxMove(player, new_board, depth - 1, max_for_player)
+
+            set_new_max = maximise and score >= best_move[1]
+            set_new_min = (not maximise) and score <= best_move[1]
+            if set_new_max or set_new_min:
+                best_move = move, score
+        return best_move
