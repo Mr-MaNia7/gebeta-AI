@@ -1,3 +1,4 @@
+import copy
 from Players import *
 
 class Board:
@@ -117,6 +118,7 @@ class Board:
             opp_pits[(self.PITS - pit) + 1] = 0
             pits[pit - 2] = 0
         return False
+    
 
     def get_score(self, player):
         """Return the running score of the player 'player'."""
