@@ -1,6 +1,6 @@
 # GEBETA (ገበጣ) with AI opponent
 
-**Implementation of a traditional Ethiopian/African game in Python. The game playing agent determines the next move in Mancala/Gebeta through greedy approach, minimax, and alpha beta pruning.**
+**Implementation of a traditional Ethiopian/African game in Python. The game playing agent determines the next move in Mancala/Gebeta through random generation, minimax, and alpha beta pruning.**
 
 # Introduction
 

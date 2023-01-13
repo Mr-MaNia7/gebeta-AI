@@ -10,7 +10,7 @@ class Player:
         self.HUMAN = 0
         self.RANDOM = 1
         self.AI = 2
-        self.AI_DEPTH = 8
+        self.AI_DEPTH = 4
         self.num = player_num
         self.opp = 2 - player_num + 1
         self.type = player_type
@@ -46,10 +46,11 @@ class Player:
         # random generation AI
         if self.type == self.RANDOM:
             move = random.choice(board.get_possible_moves(self))
-            print(f'{move} has been chosen')
+            print(f'random move => {move}')
             return move
         # AI opponent with miniMax
         if self.type == self.AI:
-            move, _ = board.miniMaxMove(self, self.AI_DEPTH, self, other_player)
-            print(f"AI(miniMax) move = {move}")
+            new_board = board.copy()
+            move, _ = new_board.miniMaxMove(self, self.AI_DEPTH, self, other_player)
+            print(f"AI(miniMax) move => {move}")
             return move

@@ -16,11 +16,10 @@ class Board:
     def copy(self):
         """Copies the object and returns the copy."""
         new_board = Board()
-        new_board.reset()
         new_board.PITS = self.PITS
-        new_board.PLAYER1_PITS = self.PLAYER1_PITS
-        new_board.PLAYER2_PITS = self.PLAYER2_PITS
-        new_board.bankPits = self.bankPits
+        new_board.PLAYER1_PITS = [pit for pit in self.PLAYER1_PITS]
+        new_board.PLAYER2_PITS = [pit for pit in self.PLAYER2_PITS]
+        new_board.bankPits = [self.bankPits[0], self.bankPits[1]]
         return new_board
 
     def __repr__(self):
@@ -140,13 +139,12 @@ class Board:
 
     def future_lookup(self, curr_player, pit):
         """Helper for looking up the game in the future, returns the newly created game state."""
-        new_board = self.copy()
         if curr_player.num == 1:
-            pits = new_board.PLAYER1_PITS
-            opp_pits = new_board.PLAYER2_PITS
+            pits = self.PLAYER1_PITS
+            opp_pits = self.PLAYER2_PITS
         else:
-            pits = new_board.PLAYER2_PITS
-            opp_pits = new_board.PLAYER1_PITS
+            pits = self.PLAYER2_PITS
+            opp_pits = self.PLAYER1_PITS
         init_pits = pits
         stones = pits[pit-1]
         pits[pit-1] = 0
@@ -162,43 +160,47 @@ class Board:
             if stones == 0:
                 break
             if pits == init_pits:
-                new_board.bankPits[curr_player.num - 1] += 1
+                self.bankPits[curr_player.num - 1] += 1
                 stones -= 1
                 repeat_turn = True
             pits, opp_pits = opp_pits, pits
             pit = 1
         if repeat_turn:
-            return new_board, True
+            return self, True
 
         if pits == init_pits and pits[pit - 2] == 1:
-            new_board.bankPits[curr_player.num - 1] += opp_pits[(new_board.PITS - pit) + 1]
-            opp_pits[(new_board.PITS - pit) + 1] = 0
+            self.bankPits[curr_player.num - 1] += opp_pits[(self.PITS - pit) + 1]
+            opp_pits[(self.PITS - pit) + 1] = 0
             pits[pit - 2] = 0
-        return new_board, False
+        return self, False
     
     def miniMaxMove(self, player, depth, max_for_player, other_player):
         """Maximizes the minimum score possible by playing a move, returns tuple of best move."""
         # When we can't make any more moves, just calculate the "final score" of the board.
-        if depth == -1 or self.is_game_over():
+        if depth == 0 or self.is_game_over():
             return None, self.get_score(max_for_player)
 
         # Get our list of possible moves and set a default we'll definitely beat.
         moves = self.get_possible_moves(player)
         # print(f"moves => {moves}")
+        if not moves:
+            return None, self.get_score(max_for_player)
         maximise = max_for_player == player
         worst_score = float('-inf') if maximise else float('inf')
         best_move = moves[0], worst_score
+        # print(f"best move => {best_move[0]}")
 
         for move in moves:
             new_board, is_repeat = self.future_lookup(player, move)
-            if not is_repeat: 
-                player, other_player = other_player, player
+            # print(new_board)
+            # if not is_repeat: 
+            #     player, other_player = other_player, player
             # recursive call for depth times
-            _move, score = new_board.miniMaxMove(player, depth - 1, max_for_player, other_player)
+            _move, score = new_board.miniMaxMove(other_player, depth - 1, max_for_player, player)
 
             set_new_max = maximise and score >= best_move[1]
             set_new_min = (not maximise) and score <= best_move[1]
-            if _move is not None and set_new_max or set_new_min:
+            if _move and (set_new_max or set_new_min):
                 best_move = move, score
         return best_move
 
